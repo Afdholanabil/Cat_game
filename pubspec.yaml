@@ -1,0 +1,38 @@
+name: cat_game
+description: "A new Flutter project."
+publish_to: 'none'
+version: 0.1.0
+
+environment:
+  sdk: '>=3.2.3 <4.0.0'
+
+dependencies:
+  flame: ^1.15.0
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^2.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/main_character/Cat/cat_1.png
+    - assets/images/main_character/Cat/cat_1_256.png
+    - assets/images/main_character/Cat/cat1_200.png
+    - assets/images/main_character/Cat/cat_1_128.png
+    - assets/images/main_character/Cat/cat1_idle_200.png
+    - assets/images/main_character/Cat/cat1_run_200.png
+    - assets/images/main_character/Cat/cat1_idle_happy_200.png
+    - assets/images/main_character/Cat/cat1_idle_hungry_200.png
+    - assets/images/HUD/HUD_arrow_right.png
+    - assets/images/HUD/HUD_arrow_left.png
+    - assets/images/Environment/background/background1.png
+    - assets/images/Environment/background/background2.png
+    - assets/images/Environment/background/background3.png
+    - assets/images/main_character/fish/fish1.png
+    - assets/images/main_character/fish/fish2.png
+
