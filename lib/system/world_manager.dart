@@ -1,5 +1,3 @@
-
-
 import 'package:cat_game/game/cat_journey.dart';
 import 'package:cat_game/system/level_system.dart';
 
@@ -11,15 +9,15 @@ class WorldManager {
 
   void restartGame() {
     currentWorld = 0;
-    gameRef.loadWorld(currentWorld); // Kembali ke world pertama
-    gameRef.player.levelSystem = LevelSystem(); // Reset level system
+    gameRef.loadWorld(currentWorld); 
+    gameRef.player.levelSystem = LevelSystem(); 
     gameRef.updateLevelHUD(1);
   }
 
   void nextWorld() {
     if (currentWorld < backgrounds.length - 1) {
       currentWorld++;
-      gameRef.loadWorld(currentWorld); // Pergi ke world berikutnya
+      gameRef.loadWorld(currentWorld);
       gameRef.updateLevelHUD(gameRef.player.levelSystem.level);
     }
   }

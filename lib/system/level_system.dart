@@ -7,7 +7,7 @@ class LevelSystem {
   LevelSystem({this.level = 1, this.xp = 0, this.xpToNextLevel = 5, this.isMaxLevel = false});
 
   void addXP(int amount) {
-    if (isMaxLevel) return; // Jika sudah level max, tidak tambah XP
+    if (isMaxLevel) return; 
     xp += amount;
     if (xp >= xpToNextLevel) {
       levelUp();

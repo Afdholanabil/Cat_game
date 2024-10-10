@@ -49,8 +49,8 @@ class CatPlayer extends SpriteAnimationGroupComponent<String>
         await _spriteAnimation('main_character/Cat/cat1_idle_happy_200.png', 4);
     idleHungryAnimation = await _spriteAnimation(
         'main_character/Cat/cat1_idle_hungry_200.png', 6);
-    idleEatingAnimation =
-        await _spriteAnimation('main_character/Cat/cat1_idle_eating_200.png', 7);
+    idleEatingAnimation = await _spriteAnimation(
+        'main_character/Cat/cat1_idle_eating_200.png', 7);
 
     animations = {
       'idle': idleAnimation,
@@ -130,50 +130,33 @@ class CatPlayer extends SpriteAnimationGroupComponent<String>
     }
   }
 
-    @override
+  @override
   void onCollision(Set<Vector2> intersectionPoints, PositionComponent other) {
     if (other is FishComponent) {
       if (!isEating) {
         isEating = true;
-        current = 'idle_eating'; // Ganti ke animasi makan
+        current = 'idle_eating';
         hungerLevel = (hungerLevel < 10) ? hungerLevel + 2 : 10;
-        other.removeFromParent(); // Menghapus ikan
+        other.removeFromParent();
 
-        // Cek jika belum mencapai level MAX, tambahkan XP
         if (!levelSystem.hasReachedMaxLevel) {
           levelSystem.addXP(1);
-          gameRef.updateLevelHUD(levelSystem.level); 
+          gameRef.updateLevelHUD(levelSystem.level);
         }
 
-        gameRef.displayEatingNotification(); // Tampilkan notifikasi
+        gameRef.displayEatingNotification();
 
-        // Buat TimerComponent dan tambahkan ke game
         final eatingTimer = TimerComponent(
           period: 2.0,
           repeat: false,
           onTick: () {
             isEating = false;
-            updateIdleState(); // Kembali ke idle setelah makan
+            updateIdleState();
           },
         );
-        gameRef.add(eatingTimer); // Tambahkan timer ke game
+        gameRef.add(eatingTimer);
       }
     }
     super.onCollision(intersectionPoints, other);
-  }
-
-
-  void addXP(int amount) {
-    xp += amount;
-    if (xp >= xpToNextLevel) {
-      levelUp();
-    }
-  }
-
-  void levelUp() {
-    level++;
-    xp = 0; // Reset XP setelah naik level
-    gameRef.updateLevelHUD(level); // Perbarui HUD level
-    print('Level up! Current level: $level');
   }
 }

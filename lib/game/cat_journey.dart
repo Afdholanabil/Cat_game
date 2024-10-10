@@ -107,19 +107,17 @@ class CatJourney extends FlameGame
       if (player.position.x < size.x - player.size.x - horizontalMargin) {
         player.position.x += player.moveSpeed * dt;
         cam.follow(player);
+      } else if (player.position.x < size.x - player.size.x) {
+        player.position.x += player.moveSpeed * dt;
       } else {
-        player.position.x = size.x - player.size.x - horizontalMargin;
+        player.position.x = size.x - player.size.x;
         if (background!.parallax!.baseVelocity.x == 0 &&
             player.position.x < akhirBackgroundX) {
           background!.parallax!.baseVelocity.x = player.moveSpeed;
+        } else {
+          background!.parallax!.baseVelocity.x = 0;
         }
       }
-    }
-
-    if (player.position.x >= akhirBackgroundX) {
-      cameraLocked = true;
-      player.position.x = akhirBackgroundX;
-      background!.parallax!.baseVelocity.x = 0;
     }
 
     if (player.playerDirection == PlayerDirection.left) {
@@ -133,6 +131,12 @@ class CatJourney extends FlameGame
           background!.parallax!.baseVelocity.x = -player.moveSpeed;
         }
       }
+    }
+
+    if (player.position.x >= akhirBackgroundX) {
+      cameraLocked = true;
+      player.position.x = akhirBackgroundX;
+      background!.parallax!.baseVelocity.x = 0;
     }
 
     if (player.position.x <= awalBackgroundX) {
@@ -150,7 +154,7 @@ class CatJourney extends FlameGame
     background = await loadParallaxComponent(
       [ParallaxImageData(backgrounds[worldIndex])],
       baseVelocity: Vector2.zero(),
-      velocityMultiplierDelta: Vector2(1.6, 1.0),
+      velocityMultiplierDelta: Vector2(1.5, 1.0),
       size: Vector2(size.x * 2, size.y),
       repeat: ImageRepeat.repeat,
     );
@@ -235,7 +239,7 @@ class CatJourney extends FlameGame
   void displayEatingNotification() {
     final notificationPosition = Vector2(
         player.position.x + player.size.x / 2 - eatingNotification.size.x / 2,
-        player.position.y - eatingNotification.size.y - 5);
+        player.position.y);
 
     eatingNotification.position = notificationPosition;
 
@@ -282,16 +286,15 @@ class CatJourney extends FlameGame
     }
   }
 
-  // Fungsi untuk menambahkan HUD ke layar
   void _addHUD() {
     hungerText = TextComponent(
         text: 'Hunger= ${player.hungerLevel}', position: Vector2(10, 10));
     levelText = TextComponent(
-        text: 'Level: ${player.levelSystem.level}', position: Vector2(10, 30));
+        text: 'Level: ${player.levelSystem.level}', position: Vector2(10, 40));
     xpText = TextComponent(
         text:
             'XP: ${player.levelSystem.xp}/${player.levelSystem.xpToNextLevel}',
-        position: Vector2(10, 50));
+        position: Vector2(10, 70));
 
     add(hungerText);
     add(levelText);
