@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 import 'package:cat_game/actors/cat_player.dart';
 import 'package:cat_game/component/fishComponent.dart';
+import 'package:cat_game/system/world_manager.dart';
 import 'package:flame/camera.dart';
 import 'package:flame/components.dart';
 import 'package:flame/events.dart';
@@ -22,7 +23,7 @@ class CatJourney extends FlameGame
         DragCallbacks,
         TapCallbacks,
         HasCollisionDetection {
-
+  late WorldManager worldManager;
   late final CameraComponent cam;
   late CatPlayer player;
   bool showSwitchWorldButton = false;
@@ -43,11 +44,12 @@ class CatJourney extends FlameGame
   TimerComponent? fishSpawnTimer;
   late TextComponent hungerText;
   late TextComponent levelText;
+  late TextComponent xpText;
 
   @override
   FutureOr<void> onLoad() async {
     await images.loadAllImages();
-    await loadWorld(currentWorld);
+    worldManager = WorldManager(this);
 
     player = CatPlayer(character: 'Cat')
       ..position = Vector2(50, size.y / 2 - 50)
@@ -55,15 +57,12 @@ class CatJourney extends FlameGame
     add(player);
 
     _addControlButtons();
+    await loadWorld(0);
 
     cam = CameraComponent(world: world)
       ..viewfinder.anchor = Anchor.center
       ..follow(player);
     add(cam);
-
-    hungerText = TextComponent(
-        text: 'Hunger= ${player.hungerLevel}', position: Vector2(10, 10));
-    add(hungerText);
 
     hungerTimer = TimerComponent(
         period: 5,
@@ -76,17 +75,30 @@ class CatJourney extends FlameGame
     _startFishSpawning();
 
     eatingNotification = SpriteComponent()
-      ..sprite = await loadSprite('HUD/HUD_arrow_right.png')
-      ..position = Vector2(size.x - 110, 10)
-      ..size = Vector2(100, 100);
-
-      levelText = TextComponent(text: 'Level: ${player.level}', position: Vector2(10, 30));
-    add(levelText);
+      ..sprite = await loadSprite('HUD/HUD_notif_eating.png')
+      ..size = Vector2(150, 45);
   }
 
   @override
   void update(double dt) {
     super.update(dt);
+
+    hungerText.text = 'Hunger= ${player.hungerLevel}';
+
+    if (player.levelSystem.level == 2 || player.levelSystem.level == 3) {
+      changeWorldOnLevelUp();
+    } else if (player.levelSystem.hasReachedMaxLevel) {
+      restartGameOnMaxLevel();
+    }
+
+    if (player.levelSystem.hasReachedMaxLevel) {
+      levelText.text = 'Level: MAX';
+      xpText.text = 'XP: 15/15';
+    } else {
+      levelText.text = 'Level: ${player.levelSystem.level}';
+      xpText.text =
+          'XP: ${player.levelSystem.xp}/${player.levelSystem.xpToNextLevel}';
+    }
 
     double akhirBackgroundX = worldWidth;
     double awalBackgroundX = worldWidth - 1280;
@@ -132,9 +144,6 @@ class CatJourney extends FlameGame
     if (player.playerDirection == PlayerDirection.none) {
       background!.parallax!.baseVelocity.x = 0;
     }
-
-    hungerText.text = 'Hunger= ${player.hungerLevel}';
-    levelText.text = 'Level: ${player.level}';
   }
 
   Future<void> loadWorld(int worldIndex) async {
@@ -146,6 +155,8 @@ class CatJourney extends FlameGame
       repeat: ImageRepeat.repeat,
     );
     add(background!);
+
+    _addHUD();
   }
 
   void _addControlButtons() {
@@ -204,12 +215,10 @@ class CatJourney extends FlameGame
           position: Vector2(randomX, randomY), size: Vector2(50, 50));
       add(fish);
 
-      // TimerComponent untuk menghapus ikan setelah 10 detik, hanya jika masih ada
       final removeFishTimer = TimerComponent(
         period: 10,
         repeat: false,
         onTick: () {
-          // Cek apakah ikan masih memiliki parent sebelum menghapus
           if (fish.parent != null) {
             remove(fish);
           }
@@ -224,18 +233,23 @@ class CatJourney extends FlameGame
   }
 
   void displayEatingNotification() {
-    add(eatingNotification); // Tambahkan notifikasi ke layar
+    final notificationPosition = Vector2(
+        player.position.x + player.size.x / 2 - eatingNotification.size.x / 2,
+        player.position.y - eatingNotification.size.y - 5);
+
+    eatingNotification.position = notificationPosition;
+
+    add(eatingNotification);
 
     final hideNotificationTimer = TimerComponent(
-      period: 2.0, // Menyembunyikan notifikasi setelah 3 detik
+      period: 2.0,
       repeat: false,
       onTick: () {
-        eatingNotification
-            .removeFromParent(); // Sembunyikan notifikasi setelah 3 detik
+        eatingNotification.removeFromParent();
       },
     );
 
-    add(hideNotificationTimer); // Tambahkan timer untuk menyembunyikan notifikasi
+    add(hideNotificationTimer);
   }
 
   void decreaseHungerLevel() {
@@ -247,6 +261,40 @@ class CatJourney extends FlameGame
   }
 
   void updateLevelHUD(int newLevel) {
-    levelText.text = 'Level: $newLevel'; // Perbarui level di HUD
+    levelText.text = 'Level: $newLevel';
+  }
+
+  void changeWorldOnLevelUp() {
+    if (player.levelSystem.level == 2 && currentWorld == 0) {
+      currentWorld = 1;
+      loadWorld(currentWorld);
+    } else if (player.levelSystem.level == 3 && currentWorld == 1) {
+      currentWorld = 2;
+      loadWorld(currentWorld);
+    }
+  }
+
+  void restartGameOnMaxLevel() {
+    if (player.levelSystem.hasReachedMaxLevel) {
+      currentWorld = 0;
+      loadWorld(currentWorld);
+      worldManager.restartGame();
+    }
+  }
+
+  // Fungsi untuk menambahkan HUD ke layar
+  void _addHUD() {
+    hungerText = TextComponent(
+        text: 'Hunger= ${player.hungerLevel}', position: Vector2(10, 10));
+    levelText = TextComponent(
+        text: 'Level: ${player.levelSystem.level}', position: Vector2(10, 30));
+    xpText = TextComponent(
+        text:
+            'XP: ${player.levelSystem.xp}/${player.levelSystem.xpToNextLevel}',
+        position: Vector2(10, 50));
+
+    add(hungerText);
+    add(levelText);
+    add(xpText);
   }
 }

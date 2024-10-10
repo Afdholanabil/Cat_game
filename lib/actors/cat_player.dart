@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:cat_game/component/fishComponent.dart';
 import 'package:cat_game/game/cat_journey.dart';
+import 'package:cat_game/system/level_system.dart';
 import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
 import 'package:flame/flame.dart';
@@ -36,6 +37,8 @@ class CatPlayer extends SpriteAnimationGroupComponent<String>
   Vector2 velocity = Vector2.zero();
   bool isFacingRight = true;
 
+  LevelSystem levelSystem = LevelSystem();
+
   @override
   Future<void> onLoad() async {
     idleAnimation =
@@ -47,7 +50,7 @@ class CatPlayer extends SpriteAnimationGroupComponent<String>
     idleHungryAnimation = await _spriteAnimation(
         'main_character/Cat/cat1_idle_hungry_200.png', 6);
     idleEatingAnimation =
-        await _spriteAnimation('main_character/Cat/cat1_200.png', 4);
+        await _spriteAnimation('main_character/Cat/cat1_idle_eating_200.png', 7);
 
     animations = {
       'idle': idleAnimation,
@@ -127,7 +130,7 @@ class CatPlayer extends SpriteAnimationGroupComponent<String>
     }
   }
 
-  @override
+    @override
   void onCollision(Set<Vector2> intersectionPoints, PositionComponent other) {
     if (other is FishComponent) {
       if (!isEating) {
@@ -135,6 +138,12 @@ class CatPlayer extends SpriteAnimationGroupComponent<String>
         current = 'idle_eating'; // Ganti ke animasi makan
         hungerLevel = (hungerLevel < 10) ? hungerLevel + 2 : 10;
         other.removeFromParent(); // Menghapus ikan
+
+        // Cek jika belum mencapai level MAX, tambahkan XP
+        if (!levelSystem.hasReachedMaxLevel) {
+          levelSystem.addXP(1);
+          gameRef.updateLevelHUD(levelSystem.level); 
+        }
 
         gameRef.displayEatingNotification(); // Tampilkan notifikasi
 
@@ -153,7 +162,8 @@ class CatPlayer extends SpriteAnimationGroupComponent<String>
     super.onCollision(intersectionPoints, other);
   }
 
-    void addXP(int amount) {
+
+  void addXP(int amount) {
     xp += amount;
     if (xp >= xpToNextLevel) {
       levelUp();

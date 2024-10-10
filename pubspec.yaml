@@ -35,4 +35,6 @@ flutter:
     - assets/images/Environment/background/background3.png
     - assets/images/main_character/fish/fish1.png
     - assets/images/main_character/fish/fish2.png
+    - assets/images/HUD/HUD_notif_eating.png
+    - assets/images/main_character/Cat/cat1_idle_eating_200.png
 
